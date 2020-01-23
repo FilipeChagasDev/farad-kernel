@@ -17,7 +17,7 @@ def outname(inname):
 
 #INTERFACE: checks if the received configuration dictionary is valid
 def check(config):
-    assert(config["target"] == "gcc_object")
+    assert(config["target"] == "cc_object")
     tag_ty = [
 	("cc", str),
         ("flags", str),
@@ -26,7 +26,7 @@ def check(config):
     ]
     for tag, ty in tag_ty:
         if type(config[tag]) != ty:
-            raise Exception("Invalid gcc_object config")
+            raise Exception("Invalid cc_object config")
 
 #INTERFACE: build
 def make(config_dict):

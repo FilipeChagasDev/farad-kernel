@@ -1,0 +1,34 @@
+{
+	"magic": "fmakeconfig",
+	"steps": [0,1,2],
+
+	-1:{
+		"target": "shell_command",
+		"dir": "obj",
+		"command": "rm %dir%/*"
+	},
+
+	0: {
+		"target": "cc_object",
+		"cc": "aarch64-linux-gnu-gcc",
+		"flags": "-Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles -Isrc",
+		"sources": fmakelists("rpi3_sources"),
+		"outdir": "obj"
+	},
+	
+	1: {
+		"target": "shell_command",
+		"files": " ".join(dir_files("obj")),
+		"link": "src/hardware/aarch64/link.ld",
+		"out": "bin/kernel8.elf",
+		"command": "aarch64-linux-gnu-ld -nostdlib -nostartfiles %files% -T %link% -o %out%"
+	},
+
+	2: {
+		"target": "shell_command",
+		"dir": "bin",
+		"in": "kernel8.elf",
+		"out": "kernel8.img",
+		"command": "aarch64-linux-gnu-objcopy -O binary %dir%/%in% %dir%/%out%"
+	}
+}

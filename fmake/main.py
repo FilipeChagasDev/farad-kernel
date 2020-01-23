@@ -58,7 +58,8 @@ def fmakelists(name):
 # returns a list of the filenames of the specified directory
 def dir_files(dirpath, walk=False):
     all_files = []
-    for root, dir, files in os.walk(globals()["root_path"] + "/" + dirpath):
+    #fullpath = globals()["root_path"] + "/" + dirpath if dirpath != "" else dirpath
+    for root, dir, files in os.walk(dirpath):
         all_files += map(lambda s: root + "/" + s, files)
         if walk == False:
             break
@@ -98,3 +99,4 @@ def make(path, _fmake_path, config_filename):
         target_module = targets[step_target]
         target_module.check(step_config)
         target_module.make(step_config)
+        print("done")
