@@ -135,7 +135,7 @@ exit_el1:
 
 //Core 1 main
 1:
-	bl       core1_main
+	bl  core1_main
 	b 	_hang
 
 //Core 2 main
@@ -156,14 +156,14 @@ exit_el1:
 	ldr x3, =__bss_end
 	ldr x0, =__bss_start
 	cmp	x0, x3
-	bcs	main
+	bcs	core0_main
 .bss_zero_loop:
 	str	wzr, [x0], 4
 	cmp	x3, x0
 	bhi	.bss_zero_loop
 
 .global _asm_enter_main
-	bl	main
+	bl	core0_main
 
 .global _hang
 _hang:

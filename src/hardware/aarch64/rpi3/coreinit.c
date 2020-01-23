@@ -1,17 +1,31 @@
+#include "uart.h"
+#include "multicore.h"
+
 void main_secundary(unsigned int core);
+void main();
+
+void core0_main()
+{
+	*core0_ready = TRUE;
+	main();
+}
 
 void core1_main()
 {
+	*core1_ready = TRUE;
     main_secundary(1);
 }
 
 void core2_main()
-{
+{	
+	*core2_ready = TRUE;
     main_secundary(2);
+	
 }
 
 void core3_main()
 {
+	*core3_ready = TRUE;
     main_secundary(3);
 }
 
@@ -26,6 +40,13 @@ unsigned long long int dbg_regs[38];
  */
 void dbg_decodeexc(unsigned long long int type)
 {
+	switch(type) {
+		case 0: uart_puts("[Synchronous]"); break;
+		case 1: uart_puts("[IRQ]"); break;
+		case 2: uart_puts("[FIQ]"); break;
+		case 3: uart_puts("[SError]"); break;
+	}
+
 	/*uint8_t cause=dbg_regs[33]>>26;
 
 	// print out interruption type

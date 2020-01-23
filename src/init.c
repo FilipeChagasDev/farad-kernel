@@ -1,11 +1,51 @@
 #include <hardware/aarch64/rpi3/uart.h>
+#include <hardware/aarch64/rpi3/multicore.h>
+#include <memory/physical.h>
 
 void main()
 {
-    uart_puts("Hello World!\n");
+    init_physical_memory_manager();
+    uart_hex(0);
+    uart_puts("\n");
+    uart_hex(physical_pages_quantity());
+    uart_puts("\n");
+    uart_hex(free_physical_pages_quantity());
+    uart_puts("\npalloc\n");
+
+    void *ppage[100];
+
+    for(int i = 0; i < 100; i++)
+    {
+        ppage[i] = alloc_physical_page();
+        uart_hex(ppage[i]);
+        uart_puts(" -alloc- ");
+        uart_hex(free_physical_pages_quantity());
+        uart_puts("\n");
+    }
+
+    for(int i = 0; i < 100; i++)
+    {
+        uart_hex(ppage[i]);
+        free_physical_page(ppage[i]);
+        uart_puts(" -free- ");
+        uart_hex(free_physical_pages_quantity());
+        uart_puts("\n");
+    }
+
+    for(int i = 0; i < 100; i++)
+    {
+        ppage[i] = alloc_physical_page();
+        uart_hex(ppage[i]);
+        uart_puts(" -alloc- ");
+        uart_hex(free_physical_pages_quantity());
+        uart_puts("\n");
+    }
+
+    start_other_3_cores();
 }
 
 void main_secundary(unsigned int core)
 {
-    while (1);
+    //uart_hex(core);
+    //uart_puts("\n");
 }

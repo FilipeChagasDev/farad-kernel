@@ -4,3 +4,4 @@ mbox.c
 delays.c
 uart.c
 gpio.c
+multicore.c

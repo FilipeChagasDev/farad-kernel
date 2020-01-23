@@ -6,6 +6,8 @@
 #ifndef kernelf_types_h
 #define kernelf_types_h
 
+#define NULL ((void*)0)
+
 typedef void* virtual_addr_t;
 typedef void* physical_addr_t;
 
