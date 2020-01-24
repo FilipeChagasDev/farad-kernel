@@ -1,27 +1,10 @@
 #include <memory/physical.h>
 #include <hardware/aarch64/rpi3/memorymap.h>
-//#include <hardware/aarch64/rpi3/uart.h>
+#include <hardware/aarch64/rpi3/uart.h>
 
 #define PAGE_LEN 0x10000
 
-typedef struct free_page_marker
-{
-    struct free_page_marker *next;
-    struct free_page_marker *prev;
-}free_page_marker_t;
-
-struct physical_mem_info_struct
-{
-    void *program_end;
-    void *physical_heap_start;
-    void *physical_heap_end;
-    ulong_t physical_heap_length;
-    ulong_t page_quantity;
-    uint_t page_length;   
-    free_page_marker_t *free_pages_list;
-    //free_page_marker_t *free_pages_list_last;  
-    ulong_t free_pages_count;
-}physical_mem_info;
+physical_mem_info_t physical_mem_info;
 
 void init_physical_memory_manager()
 {
@@ -69,11 +52,16 @@ void init_physical_memory_manager()
     //Next pages
     while( free_page < physical_mem_info.physical_heap_end )
     {
-        /*uart_puts("page");
+        /*
+        // ==== debug log ====
+        uart_puts("page");
         uart_hex(free_page);
         uart_puts(" ");
         uart_hex(physical_mem_info.page_length);
-        uart_puts("\n");*/
+        uart_puts("\n");
+        // ====================
+        */
+       
         physical_mem_info.free_pages_count += 1;
         prev_free_page = free_page; 
         free_page += physical_mem_info.page_length>>4;
@@ -82,8 +70,7 @@ void init_physical_memory_manager()
     }
     
     //Last page
-    free_page->next = NULL; 
-    //physical_mem_info.free_pages_list_last = free_page;
+    free_page->next = NULL;
 }
 
 uint_t physical_page_length()
@@ -116,10 +103,15 @@ physical_addr_t alloc_physical_page()
     else
     {
         physical_mem_info.free_pages_list = NULL;
-        //physical_mem_info.free_pages_list_last = NULL;
     }
 
     physical_mem_info.free_pages_count -= 1;
+
+    // ==== debug log =====
+    uart_puts("allocated page at ");
+    uart_hex(page_addr);
+    uart_send('\n');
+    // =====================
 
     return page_addr;
 }
