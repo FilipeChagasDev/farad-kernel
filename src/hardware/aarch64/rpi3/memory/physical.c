@@ -5,7 +5,10 @@
 
 #include <memory/physical.h>
 #include <hardware/aarch64/rpi3/memorymap.h>
-#include <hardware/aarch64/rpi3/uart.h>
+
+#ifdef PHYSICAL_MEM_DEBUG
+    #include <log/message.h>
+#endif
 
 #define PAGE_LEN 0x10000
 
@@ -57,21 +60,21 @@ void init_physical_memory_manager()
     //Next pages
     while( free_page < physical_mem_info.physical_heap_end )
     {
-        /*
-        // ==== debug log ====
-        uart_puts("page");
-        uart_hex(free_page);
-        uart_puts(" ");
-        uart_hex(physical_mem_info.page_length);
-        uart_puts("\n");
-        // ====================
-        */
-       
         physical_mem_info.free_pages_count += 1;
         prev_free_page = free_page; 
         free_page += physical_mem_info.page_length>>4;
         prev_free_page->next = free_page;
         free_page->prev = prev_free_page;
+
+        #ifdef PHYSICAL_MEM_DEBUG
+        // ==== debug log ====
+        kernel_log_string("page marked free - ");
+        kernel_log_hex(free_page, TRUE);
+        kernel_log_string(" - total ");
+        kernel_log_natural(physical_mem_info.free_pages_count);
+        kernel_log_char('\n');
+        // ====================
+        #endif
     }
     
     //Last page
@@ -112,11 +115,14 @@ physical_addr_t alloc_physical_page()
 
     physical_mem_info.free_pages_count -= 1;
 
-    // ==== debug log =====
-    uart_puts("allocated page at ");
-    uart_hex(page_addr);
-    uart_send('\n');
-    // =====================
+    #ifdef PHYSICAL_MEM_DEBUG
+    //debug log
+    kernel_log_string("allocated physical page at ");
+    kernel_log_hex(page_addr, TRUE);
+    kernel_log_string(" - ");
+    kernel_log_natural(physical_mem_info.free_pages_count);
+    kernel_log_string(" free physical pages available\n");
+    #endif
 
     return page_addr;
 }
@@ -142,4 +148,13 @@ void free_physical_page(physical_addr_t addr)
     }
 
     physical_mem_info.free_pages_list = free_page;
+
+    #ifdef PHYSICAL_MEM_DEBUG
+    //debug log
+    kernel_log_string("free physical page at ");
+    kernel_log_hex(addr, TRUE);
+    kernel_log_string(" - ");
+    kernel_log_natural(physical_mem_info.free_pages_count);
+    kernel_log_string(" free physical pages available\n");
+    #endif
 }

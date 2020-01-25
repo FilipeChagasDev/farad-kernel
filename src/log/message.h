@@ -8,6 +8,10 @@
 
 #include <types.h>
 
+void kernel_log_char(char c);
 void kernel_log_string(string_t str);
+void kernel_log_natural(ullong_t number);
+void kernel_log_integer(llong_t number);
+void kernel_log_hex(ullong_t value, boolean_t caps);
 
 #endif

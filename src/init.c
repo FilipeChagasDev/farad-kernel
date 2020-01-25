@@ -2,6 +2,7 @@
 #include <hardware/aarch64/rpi3/multicore.h>
 #include <memory/physical.h>
 #include <memory/virtual.h>
+#include <log/message.h>
 
 void test_palloc()
 {
@@ -138,10 +139,22 @@ void test_linear_mapping()
     uart_puts(page);
 }
 
+void test_log()
+{
+    kernel_log_string("HELLO\n");
+    kernel_log_natural(123);
+    kernel_log_char('\n');
+    kernel_log_integer(-123);
+    kernel_log_char('\n');
+    kernel_log_hex(0x123ABC, TRUE);
+    kernel_log_char('\n');
+}
+
 void main()
 {
     uart_init();
     uart_puts("initializing...\n");
+    test_log();
     test_linear_mapping();
     uart_puts("done\n");
 //    start_other_3_cores();

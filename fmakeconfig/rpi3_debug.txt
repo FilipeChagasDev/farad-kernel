@@ -1,17 +1,17 @@
 {
 	"magic": "fmakeconfig",
-	"steps": [0,1,2,3],
+	"steps": [-1,0,1,2,3,4],
 
 	-1:{
 		"target": "shell_command",
-		"dir": "obj",
+		"dir": "bin",
 		"command": "rm %dir%/*"
 	},
 
 	0: {
 		"target": "cc_object",
 		"cc": "aarch64-linux-gnu-gcc",
-		"flags": "-Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles -Isrc",
+		"flags": "-Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles -Isrc -DPHYSICAL_MEM_DEBUG",
 		"sources": fmakelists("rpi3_sources"),
 		"outdir": "obj"
 	},
@@ -19,7 +19,7 @@
 	1: {
 		"target": "cc_object",
 		"cc": "aarch64-linux-gnu-gcc",
-		"flags": "-Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles -Isrc",
+		"flags": "-Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles -Isrc -DPHYSICAL_MEM_DEBUG",
 		"sources": fmakelists("sources"),
 		"outdir": "obj"
 	},
@@ -38,5 +38,10 @@
 		"in": "kernel8.elf",
 		"out": "kernel8.img",
 		"command": "aarch64-linux-gnu-objcopy -O binary %dir%/%in% %dir%/%out%"
+	},
+
+	4: {
+		"target": "shell_command",
+		"command": "./qemurpi3.sh"
 	}
 }

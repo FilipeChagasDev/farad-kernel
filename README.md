@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/Version-v0.0.4-blue)
+![Version](https://img.shields.io/badge/Version-v0.0.5-blue)
 ![Compiler](https://img.shields.io/badge/Compiler-gcc-green)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 ![Language](https://img.shields.io/badge/Language-C-yellow)
@@ -14,7 +14,7 @@ Right after cloning the repository, if the bin and obj directories do not exist,
 ./init.sh
 ```
 
-The following command compiles the kernel and generates the kernel8.img file in the bin directory:
+The following command compiles the kernel and generates the kernel8.img file in the bin directory (you may need to run it more than once):
 
 ```sh
 python3 build.py
@@ -25,6 +25,19 @@ The following command starts the emulation:
 ```sh
 ./qemurpi3.sh
 ```
+# Debug
+
+Right after cloning the repository, if the bin and obj directories do not exist, the following command must be executed:
+
+```sh
+./init.sh
+```
+
+The following command compiles the kernel and generates the kernel8.img file in the bin directory with debug features enabled and starts qemu (you may need to run it more than once):
+
+```sh
+python3 debug.py
+```
 
 # Project Owner
 * Filipe Chagas [https://github.com/filipechagasdev, filipe.ferraz0@gmail.com]
@@ -33,7 +46,7 @@ The following command starts the emulation:
 * [x] UART I/O (done at v0.0.1)
 * [x] Physical memory pages alloc-free (done at v0.0.2)
 * [x] PageTable create-delete-map-unmap (done at v0.0.3)
-* [x] PageTable enable-switch (to do at v0.0.4)
+* [x] PageTable enable-switch (done at v0.0.4)
 * [ ] Kernel malloc-free
 * [ ] Other features... 
 
