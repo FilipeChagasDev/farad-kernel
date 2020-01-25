@@ -7,10 +7,10 @@
 
 void panic_log(char *title, char *description)
 {
-    uart_puts("\n[PANIC]\n");
-    uart_puts(title);
-    uart_puts("\n");
-    uart_puts(description);
-    uart_puts("\n");
-    while (1) asm("nop");
+    kernel_log_string("\n[PANIC]\n");
+    kernel_log_string(title);
+    kernel_log_char('\n');
+    kernel_log_string(description);
+    kernel_log_char('\n');
+    while (1);
 }

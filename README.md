@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/Version-v0.0.5-blue)
+![Version](https://img.shields.io/badge/Version-v0.0.6-blue)
 ![Compiler](https://img.shields.io/badge/Compiler-gcc-green)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 ![Language](https://img.shields.io/badge/Language-C-yellow)
@@ -6,7 +6,14 @@
 # kernel.f
 (Kernel-dot-F) Multitask kernel project
 
-# Build
+# Build/Debug dependencies
+
+* Some GNU-Linux OS
+* aarch64-linux-gnu-gcc (GCC for ARM64)
+* Python 3
+* qemu-system-aarch64 (QEMU for ARM64, just for kernel emulation)
+
+## Build
 
 Right after cloning the repository, if the bin and obj directories do not exist, the following command must be executed:
 
@@ -25,7 +32,7 @@ The following command starts the emulation:
 ```sh
 ./qemurpi3.sh
 ```
-# Debug
+## Debug
 
 Right after cloning the repository, if the bin and obj directories do not exist, the following command must be executed:
 

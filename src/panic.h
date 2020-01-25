@@ -7,7 +7,7 @@
 #define kernelf_panic_h
 
 #include <types.h>
-#include <hardware/aarch64/rpi3/uart.h>
+#include <log/message.h>
 
 void panic_log(char *title, char *description);
 

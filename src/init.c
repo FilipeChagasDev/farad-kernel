@@ -1,4 +1,3 @@
-#include <hardware/aarch64/rpi3/uart.h>
 #include <hardware/aarch64/rpi3/multicore.h>
 #include <memory/physical.h>
 #include <memory/virtual.h>
@@ -7,40 +6,40 @@
 void test_palloc()
 {
     init_physical_memory_manager();
-    uart_hex(0);
-    uart_puts("\n");
-    uart_hex(physical_pages_quantity());
-    uart_puts("\n");
-    uart_hex(free_physical_pages_quantity());
-    uart_puts("\npalloc\n");
+    kernel_log_hex(0, TRUE);
+    kernel_log_string("\n");
+    kernel_log_hex(physical_pages_quantity());
+    kernel_log_string("\n");
+    kernel_log_hex(free_physical_pages_quantity());
+    kernel_log_string("\npalloc\n");
 
     void *ppage[100];
 
     for(int i = 0; i < 100; i++)
     {
         ppage[i] = alloc_physical_page();
-        uart_hex(ppage[i]);
-        uart_puts(" -alloc- ");
-        uart_hex(free_physical_pages_quantity());
-        uart_puts("\n");
+        kernel_log_hex(ppage[i], TRUE);
+        kernel_log_string(" -alloc- ");
+        kernel_log_hex(free_physical_pages_quantity(), TRUE);
+        kernel_log_string("\n");
     }
 
     for(int i = 0; i < 100; i++)
     {
-        uart_hex(ppage[i]);
+        kernel_log_hex(ppage[i], TRUE);
         free_physical_page(ppage[i]);
-        uart_puts(" -free- ");
-        uart_hex(free_physical_pages_quantity());
-        uart_puts("\n");
+        kernel_log_string(" -free- ");
+        kernel_log_hex(free_physical_pages_quantity(), TRUE);
+        kernel_log_string("\n");
     }
 
     for(int i = 0; i < 100; i++)
     {
         ppage[i] = alloc_physical_page();
-        uart_hex(ppage[i]);
-        uart_puts(" -alloc- ");
-        uart_hex(free_physical_pages_quantity());
-        uart_puts("\n");
+        kernel_log_hex(ppage[i], TRUE);
+        kernel_log_string(" -alloc- ");
+        kernel_log_hex(free_physical_pages_quantity(), TRUE);
+        kernel_log_string("\n");
     }
 }
 
@@ -100,19 +99,19 @@ void test_pagetable_enable()
     char *vstr2 = vp2;
     
     enable_pagetable(pt);
-    uart_hex(vstr);
-    uart_puts(vstr);
-    uart_hex(vstr2);
-    uart_puts(vstr2);
+    kernel_log_hex(vstr, TRUE);
+    kernel_log_string(vstr);
+    kernel_log_hex(vstr2, TRUE);
+    kernel_log_string(vstr2);
 
-    uart_puts("switching\n");
+    kernel_log_string("switching\n");
     switch_pagetable(pt2);
 
-    uart_hex(vstr);
-    uart_puts(vstr);
+    kernel_log_hex(vstr, TRUE);
+    kernel_log_string(vstr);
 
-    uart_hex(vstr2);
-    uart_puts(vstr2);
+    kernel_log_hex(vstr2, TRUE);
+    kernel_log_string(vstr2);
 }
 
 void test_linear_mapping()
@@ -132,11 +131,11 @@ void test_linear_mapping()
     page[7] = '\n';
     page[8] = '\0';
 
-    uart_puts("before MMU enable\n");
-    uart_puts(page);
-    uart_puts("after MMU enable\n");
+    kernel_log_string("before MMU enable\n");
+    kernel_log_string(page);
+    kernel_log_string("after MMU enable\n");
     enable_pagetable(pt);
-    uart_puts(page);
+    kernel_log_string(page);
 }
 
 void test_log()
@@ -153,15 +152,15 @@ void test_log()
 void main()
 {
     uart_init();
-    uart_puts("initializing...\n");
+    kernel_log_string("initializing...\n");
     test_log();
     test_linear_mapping();
-    uart_puts("done\n");
+    kernel_log_string("done\n");
 //    start_other_3_cores();
 }
 
 void main_secundary(unsigned int core)
 {
-    //uart_hex(core);
-    //uart_puts("\n");
+    //kernel_log_hex(core, TRUE);
+    //kernel_log_string("\n");
 }
