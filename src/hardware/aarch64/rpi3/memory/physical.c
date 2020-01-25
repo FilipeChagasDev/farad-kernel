@@ -1,3 +1,8 @@
+/*
+ * KERNEL.F SOURCE CODE
+ * Author: Filipe Chagas Ferraz
+ */
+
 #include <memory/physical.h>
 #include <hardware/aarch64/rpi3/memorymap.h>
 #include <hardware/aarch64/rpi3/uart.h>

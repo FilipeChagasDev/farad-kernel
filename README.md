@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/Version-v0.0.3-blue)
+![Version](https://img.shields.io/badge/Version-v0.0.4-blue)
 ![Compiler](https://img.shields.io/badge/Compiler-gcc-green)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 ![Language](https://img.shields.io/badge/Language-C-yellow)
@@ -33,6 +33,16 @@ The following command starts the emulation:
 * [x] UART I/O (done at v0.0.1)
 * [x] Physical memory pages alloc-free (done at v0.0.2)
 * [x] PageTable create-delete-map-unmap (done at v0.0.3)
-* [ ] PageTable enable-switch (to do at v0.0.4)
+* [x] PageTable enable-switch (to do at v0.0.4)
 * [ ] Kernel malloc-free
 * [ ] Other features... 
+
+## Credits
+
+* Leon de Boer [https://github.com/LdB-ECM, ldeboer@gateway.net.au]
+
+Some code used here was taken and adapted from the Raspi3-kernel project (https://github.com/LdB-ECM/Raspi3-Kernel).
+
+* Rene Stange [https://github.com/rsta2, rsta2@o2online.de]
+
+Some code used here was taken and adapted from the Circle project (https://github.com/rsta2/circle).

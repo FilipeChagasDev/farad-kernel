@@ -72,7 +72,11 @@ struct TARMV8MMU_LEVEL2_BLOCK_DESCRIPTOR
 		//UpperAttributes	: 12
 			Continous	: 1,	// set to 0
 			PXN		: 1,	// set to 0, 1 for device memory
-			UXN		: 1,	// set to 1
+#define ATTRIB_PXN_NEVER_EXECUTE 1
+#define ATTRIB_PXN_ALLOW_EXECUTE 0
+			UXN		: 1,
+#define ATTRIB_UXN_NEVER_EXECUTE 1
+#define ATTRIB_UXN_ALLOW_EXECUTE 0
 			Ignored		: 9;	// set to 0
 }
 PACKED;

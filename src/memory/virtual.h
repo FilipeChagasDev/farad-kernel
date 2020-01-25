@@ -30,7 +30,9 @@ physical_addr_t pagetable_get_translation(pagetable_addr_t pagetable_base, virtu
 
 //virtual_addr_t pagetable_find(physical_addr_t physical_addr);
 
-//void switch_pagetable(pagetable_addr_t next_pagetable_base);
+void enable_pagetable(pagetable_addr_t pagetable_base);
+
+void switch_pagetable(pagetable_addr_t next_pagetable_base);
 
 extern pagetable_addr_t current_pagetable;
 

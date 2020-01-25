@@ -1,0 +1,9 @@
+# Memory management
+
+## Physical memory
+
+In the RPI3 implementation, the memory pages are 64KiB.
+
+The space that starts at the first 64KiB block after the address &_end and ends at the address 0x3C000000 is used as a dynamic page allocation space (the so-called physical heap).
+
+

@@ -1,3 +1,5 @@
+//Code taken and adapted from https://github.com/LdB-ECM/Raspi3-Kernel
+
 #include "gpio.h"
 
 /*

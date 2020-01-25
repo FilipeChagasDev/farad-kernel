@@ -1,3 +1,5 @@
+//Code taken and adapted from https://github.com/LdB-ECM/Raspi3-Kernel
+
 #include "delays.h"
 
 #define SYSTEM_TIMER_LOW	((volatile uint_t *)(MMIO_BASE+0x000003004))

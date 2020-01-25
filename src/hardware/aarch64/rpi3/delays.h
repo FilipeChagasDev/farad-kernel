@@ -1,3 +1,5 @@
+//Code taken and adapted from https://github.com/LdB-ECM/Raspi3-Kernel
+
 #ifndef DELAYS_H
 #define DELAYS
 

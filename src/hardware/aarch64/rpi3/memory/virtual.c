@@ -1,3 +1,8 @@
+/*
+ * KERNEL.F SOURCE CODE
+ * Author: Filipe Chagas Ferraz
+ */
+
 #include <memory/virtual.h>
 #include <hardware/aarch64/memory/armv8mmu.h>
 
@@ -27,6 +32,7 @@ pagetable_addr_t create_pagetable()
     for(ulong_t i = 0; i < ARMV8MMU_TABLE_ENTRIES; i++)
     {
         l2[i].Value11 = UNDEFINED_BLOCK;
+        l2[i].APTable = 0; //No access
     }
 
     return (pagetable_addr_t)l2;
@@ -62,10 +68,18 @@ void pagetable_map(pagetable_addr_t pagetable_base, virtual_addr_t virtual_addr,
         for(ulong_t i = 0; i < ARMV8MMU_TABLE_ENTRIES; i++)
         {
             l3[i].Value11 = UNDEFINED_BLOCK;
+            l3[i].AP = 0; //No access
         }
 
         l2[l2_index].TableAddress = ARMV8MMUL2TABLEADDR((ullong_t)l3);
-        l2[l2_index].Value11 = DEFINED_BLOCK;    
+        l2[l2_index].Value11 = DEFINED_BLOCK;
+        l2[l2_index].APTable = ATTRIB_AP_RW_ALL;
+        l2[l2_index].Ignored1 = 0;
+        l2[l2_index].Reserved0 = 0;
+        l2[l2_index].Ignored2 = 0;
+        l2[l2_index].PXNTable = ATTRIB_PXN_ALLOW_EXECUTE;
+        l2[l2_index].UXNTable = ATTRIB_UXN_ALLOW_EXECUTE;
+        l2[l2_index].NSTable = 0;
     }
     else
     {
@@ -80,18 +94,29 @@ void pagetable_map(pagetable_addr_t pagetable_base, virtual_addr_t virtual_addr,
 	l3[l3_index].OutputAddress = ARMV8MMUL3PAGEADDR ((ullong_t)physical_addr);
 	l3[l3_index].Reserved0_2 = 0;
 	l3[l3_index].Continous = 0;
-	l3[l3_index].UXN = 1;
 	l3[l3_index].Ignored = 0;
 
     switch (page_access)
     {
-        case PA_KERNEL: l3[l3_index].AP = ATTRIB_AP_RW_EL1; break;
-        case PA_USER_READ_ONLY: l3[l3_index].AP = ATTRIB_AP_RO_ALL; break;
-        case PA_USER_READ_WRITE: l3[l3_index].AP = ATTRIB_AP_RW_ALL; break;
-        default: PA_KERNEL: l3[l3_index].AP = ATTRIB_AP_RW_EL1; break;
+        case PA_KERNEL: 
+            l3[l3_index].AP = ATTRIB_AP_RW_EL1;
+            l3[l3_index].UXN = ATTRIB_UXN_NEVER_EXECUTE; 
+            break;
+        case PA_USER_READ_ONLY: 
+            l3[l3_index].AP = ATTRIB_AP_RO_ALL; 
+            l3[l3_index].UXN = ATTRIB_UXN_ALLOW_EXECUTE;
+            break;
+        case PA_USER_READ_WRITE: 
+            l3[l3_index].AP = ATTRIB_AP_RW_ALL; 
+            l3[l3_index].UXN = ATTRIB_UXN_ALLOW_EXECUTE;
+            break;
+        default: 
+            l3[l3_index].AP = ATTRIB_AP_RW_EL1; 
+            l3[l3_index].UXN = ATTRIB_UXN_NEVER_EXECUTE;
+            break;
     }
 
-    if(physical_addr >= physical_mem_info.program_end ) l3[l3_index].PXN = 1;
+    if(physical_addr >= physical_mem_info.physical_heap_end ) l3[l3_index].PXN = 1;
     else l3[l3_index].PXN = 0;
 
     if(physical_addr >= MMIO_BASE) //physical_addr is a device address
@@ -108,6 +133,8 @@ void pagetable_map(pagetable_addr_t pagetable_base, virtual_addr_t virtual_addr,
 
 void pagetable_unmap(pagetable_addr_t pagetable_base, virtual_addr_t virtual_addr)
 {
+    /*FIXME: Address translation does not work when this function is used */
+
     DESC_L2 *l2 = (DESC_L2*)pagetable_base;
     ulong_t l2_index = ((ullong_t)virtual_addr)>>29 & 0x1FFF;
     ulong_t l3_index = ((ullong_t)virtual_addr)>>16 & 0x1FFF;
@@ -121,9 +148,10 @@ void pagetable_unmap(pagetable_addr_t pagetable_base, virtual_addr_t virtual_add
         //check if the l3 is empty
         for(ulong_t i = 0; i < ARMV8MMU_TABLE_ENTRIES; i++)
         {
-            if(l3[l3_index].Value11 == DEFINED_BLOCK) return;
+            if(l3[l3_index].Value11 == DEFINED_BLOCK) return; //l3 is not empty
         }
-        //if true, free the containing page
+
+        //if l3 is empty, free the containing page
         free_physical_page(l3);
         l2[l2_index].Value11 = UNDEFINED_BLOCK;
     }
@@ -157,4 +185,162 @@ physical_addr_t pagetable_get_translation(pagetable_addr_t pagetable_base, virtu
     else
         return NO_TRANSLATION;
 }
+
+void enable_pagetable(pagetable_addr_t pagetable_base)
+{
+    current_pagetable = pagetable_base;
+
+	ullong_t nMAIR_EL1 =   0xFF << ATTRINDX_NORMAL*8	// inner/outer write-back non-transient, allocating
+	                | 0x04 << ATTRINDX_DEVICE*8	        // Device-nGnRE
+	                | 0x00 << ATTRINDX_COHERENT*8;	    // Device-nGnRnE
+	
+    asm volatile ("msr mair_el1, %0" : : "r" (nMAIR_EL1));
+
+	asm volatile ("msr ttbr0_el1, %0" : : "r" (pagetable_base));
+
+	ullong_t nTCR_EL1 = 0;
+	asm volatile ("mrs %0, tcr_el1" : "=r" (nTCR_EL1));
+
+	nTCR_EL1 &= ~(  TCR_EL1_IPS__MASK
+		      | TCR_EL1_A1
+		      | TCR_EL1_TG0__MASK
+		      | TCR_EL1_SH0__MASK
+		      | TCR_EL1_ORGN0__MASK
+		      | TCR_EL1_IRGN0__MASK
+		      | TCR_EL1_EPD0
+		      | TCR_EL1_T0SZ__MASK);
+
+	nTCR_EL1 |=   TCR_EL1_EPD1
+		     | TCR_EL1_TG0_64KB	    << TCR_EL1_TG0__SHIFT
+		     | TCR_EL1_SH0_INNER     << TCR_EL1_SH0__SHIFT
+		     | TCR_EL1_ORGN0_WR_BACK_ALLOCATE << TCR_EL1_ORGN0__SHIFT
+		     | TCR_EL1_IRGN0_WR_BACK_ALLOCATE << TCR_EL1_IRGN0__SHIFT
+		     | TCR_EL1_IPS_4GB	    << TCR_EL1_IPS__SHIFT
+		     | TCR_EL1_T0SZ_4GB	    << TCR_EL1_T0SZ__SHIFT;
+
+	asm volatile ("msr tcr_el1, %0" : : "r" (nTCR_EL1));
+
+	uint_t nSCTLR_EL1 = 0;
+	asm volatile ("mrs %0, sctlr_el1" : "=r" (nSCTLR_EL1));
+	
+    nSCTLR_EL1 &= ~(  SCTLR_EL1_WXN | SCTLR_EL1_A);
+	
+    nSCTLR_EL1 |=   SCTLR_EL1_I
+		       | SCTLR_EL1_C
+		       | SCTLR_EL1_M;
+
+	asm volatile ("msr sctlr_el1, %0" : : "r" (nSCTLR_EL1) : "memory");
+}
+
+void switch_pagetable(pagetable_addr_t next_pagetable_base)
+{
+    enable_pagetable(next_pagetable_base);
+}
+
+/*
+void set_ttbr0_el1(ullong_t v)
+{
+    asm volatile("msr ttbr0_el1, %0" : : "r" (v) : "memory");
+}
+
+void set_ttbr0_el1(ullong_t v)
+{
+    asm volatile("msr ttbr1_el1, %0" : : "r" (v) : "memory");
+}
+
+void set_tcr_el1(ullong_t v)
+{
+    asm volatile("msr tcr_el1, %0" : : "r" (v) : "memory");
+}
+
+void set_mair_el1(ullong_t v)
+{
+    asm volatile("msr mair_el1, %0" : : "r" (v) : "memory");
+}
+
+
+// ================ Cache management ======================
+
+#define SETWAY_LEVEL_SHIFT		1
+
+#define L1_DATA_CACHE_SETS		128
+#define L1_DATA_CACHE_WAYS		4
+	#define L1_SETWAY_WAY_SHIFT		30	// 32-Log2(L1_DATA_CACHE_WAYS)
+#define L1_DATA_CACHE_LINE_LENGTH	64
+	#define L1_SETWAY_SET_SHIFT		6	// Log2(L1_DATA_CACHE_LINE_LENGTH)
+
+#define L2_CACHE_SETS			512
+#define L2_CACHE_WAYS			16
+	#define L2_SETWAY_WAY_SHIFT		28	// 32-Log2(L2_CACHE_WAYS)
+#define L2_CACHE_LINE_LENGTH		64
+	#define L2_SETWAY_SET_SHIFT		6	// Log2(L2_CACHE_LINE_LENGTH)
+
+#define DATA_CACHE_LINE_LENGTH_MIN	64		// min(L1_DATA_CACHE_LINE_LENGTH, L2_CACHE_LINE_LENGTH)
+
+
+void invalidate_data_cache (void)
+{
+	// invalidate L1 data cache
+	for (register unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
+	{
+		for (register unsigned nWay = 0; nWay < L1_DATA_CACHE_WAYS; nWay++)
+		{
+			register ullong_t nSetWayLevel =   nWay << L1_SETWAY_WAY_SHIFT
+						    | nSet << L1_SETWAY_SET_SHIFT
+						    | 0 << SETWAY_LEVEL_SHIFT;
+
+			asm volatile ("dc isw, %0" : : "r" (nSetWayLevel) : "memory");
+		}
+	}
+
+	// invalidate L2 unified cache
+	for (register unsigned nSet = 0; nSet < L2_CACHE_SETS; nSet++)
+	{
+		for (register unsigned nWay = 0; nWay < L2_CACHE_WAYS; nWay++)
+		{
+			register ullong_t nSetWayLevel =   nWay << L2_SETWAY_WAY_SHIFT
+						    | nSet << L2_SETWAY_SET_SHIFT
+						    | 1 << SETWAY_LEVEL_SHIFT;
+
+			asm volatile ("dc isw, %0" : : "r" (nSetWayLevel) : "memory");
+		}
+	}
+
+//	DataSyncBarrier ();
+}
+
+void clean_data_cache (void)
+{
+	// clean L1 data cache
+	for (register unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
+	{
+		for (register unsigned nWay = 0; nWay < L1_DATA_CACHE_WAYS; nWay++)
+		{
+			register ullong_t nSetWayLevel =   nWay << L1_SETWAY_WAY_SHIFT
+						    | nSet << L1_SETWAY_SET_SHIFT
+						    | 0 << SETWAY_LEVEL_SHIFT;
+
+			asm volatile ("dc csw, %0" : : "r" (nSetWayLevel) : "memory");
+		}
+	}
+
+	// clean L2 unified cache
+	for (register unsigned nSet = 0; nSet < L2_CACHE_SETS; nSet++)
+	{
+		for (register unsigned nWay = 0; nWay < L2_CACHE_WAYS; nWay++)
+		{
+			register ullong_t nSetWayLevel =   nWay << L2_SETWAY_WAY_SHIFT
+						    | nSet << L2_SETWAY_SET_SHIFT
+						    | 1 << SETWAY_LEVEL_SHIFT;
+
+			asm volatile ("dc csw, %0" : : "r" (nSetWayLevel) : "memory");
+		}
+	}
+
+//	DataSyncBarrier ();
+}
+
+// ================================================================
+*/
+
 

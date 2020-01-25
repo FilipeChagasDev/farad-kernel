@@ -1,3 +1,8 @@
+/*
+ * KERNEL.F SOURCE CODE
+ * Author: Filipe Chagas Ferraz
+ */
+
 #include <panic.h>
 
 void panic_log(char *title, char *description)

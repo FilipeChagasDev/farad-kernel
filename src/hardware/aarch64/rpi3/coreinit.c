@@ -47,51 +47,47 @@ void dbg_decodeexc(unsigned long long int type)
 		case 3: uart_puts("[SError]"); break;
 	}
 
-	/*uint8_t cause=dbg_regs[33]>>26;
+	byte_t cause = dbg_regs[33]>>26;
 
-	// print out interruption type
-	switch(type) {
-		case 0: printf("Synchronous"); break;
-		case 1: printf("IRQ"); break;
-		case 2: printf("FIQ"); break;
-		case 3: printf("SError"); break;
-	}
-	printf(": ");
-	// decode exception type (some, not all. See ARM DDI0487B_b chapter D10.2.28)
 	switch(cause) {
-		case 0b000000: printf("Unknown"); break;
-		case 0b000001: printf("Trapped WFI/WFE"); break;
-		case 0b001110: printf("Illegal execution"); break;
-		case 0b010101: printf("System call"); break;
-		case 0b100000: printf("Instruction abort, lower EL"); break;
-		case 0b100001: printf("Instruction abort, same EL"); break;
-		case 0b100010: printf("Instruction alignment fault"); break;
-		case 0b100100: printf("Data abort, lower EL"); break;
-		case 0b100101: printf("Data abort, same EL"); break;
-		case 0b100110: printf("Stack alignment fault"); break;
-		case 0b101100: printf("Floating point"); break;
-		case 0b110000: printf("Breakpoint, lower EL"); break;
-		case 0b110001: printf("Breakpoint, same EL"); break;
-		case 0b111100: printf("Breakpoint instruction"); break;
-		default: printf("Unknown %x", cause); break;
+		case 0b000000: uart_puts("Unknown"); break;
+		case 0b000001: uart_puts("Trapped WFI/WFE"); break;
+		case 0b001110: uart_puts("Illegal execution"); break;
+		case 0b010101: uart_puts("System call"); break;
+		case 0b100000: uart_puts("Instruction abort, lower EL"); break;
+		case 0b100001: uart_puts("Instruction abort, same EL"); break;
+		case 0b100010: uart_puts("Instruction alignment fault"); break;
+		case 0b100100: uart_puts("Data abort, lower EL"); break;
+		case 0b100101: uart_puts("Data abort, same EL"); break;
+		case 0b100110: uart_puts("Stack alignment fault"); break;
+		case 0b101100: uart_puts("Floating point"); break;
+		case 0b110000: uart_puts("Breakpoint, lower EL"); break;
+		case 0b110001: uart_puts("Breakpoint, same EL"); break;
+		case 0b111100: uart_puts("Breakpoint instruction"); break;
+		default: uart_puts("Unknown"); break;
 	}
 	// decode data abort cause
 	if(cause==0b100100 || cause==0b100101) {
-		printf(", ");
+		uart_puts(", ");
 		switch((dbg_regs[33]>>2)&0x3) {
-			case 0: printf("Address size fault"); break;
-			case 1: printf("Translation fault"); break;
-			case 2: printf("Access flag fault"); break;
-			case 3: printf("Permission fault"); break;
+			case 0: uart_puts("Address size fault"); break;
+			case 1: uart_puts("Translation fault"); break;
+			case 2: uart_puts("Access flag fault"); break;
+			case 3: uart_puts("Permission fault"); break;
 		}
 		switch(dbg_regs[33]&0x3) {
-			case 0: printf(" at level 0"); break;
-			case 1: printf(" at level 1"); break;
-			case 2: printf(" at level 2"); break;
-			case 3: printf(" at level 3"); break;
+			case 0: uart_puts(" at level 0"); break;
+			case 1: uart_puts(" at level 1"); break;
+			case 2: uart_puts(" at level 2"); break;
+			case 3: uart_puts(" at level 3"); break;
 		}
 	}
-	printf("\n");
+
+	uart_puts("\n");
+
+	while(1);	
+
+	/*
 	// if the exception happened in the debugger, we stop to avoid infinite loop
 	if(dbg_running) {
 		printf("Exception in debugger!\n"
@@ -103,6 +99,6 @@ void dbg_decodeexc(unsigned long long int type)
 
 void dbg_main()
 {
-
+	uart_puts("\n_|_|_|_|_|_\n");
 }
 
