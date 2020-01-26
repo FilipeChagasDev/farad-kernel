@@ -5,6 +5,7 @@
 
 #include <memory/virtual.h>
 #include <hardware/aarch64/memory/armv8mmu.h>
+#include <hardware/aarch64/rpi3/memorymap.h>
 
 pagetable_addr_t current_pagetable;
 

@@ -8,9 +8,9 @@ void test_palloc()
     init_physical_memory_manager();
     kernel_log_hex(0, TRUE);
     kernel_log_string("\n");
-    kernel_log_hex(physical_pages_quantity());
+    kernel_log_hex(physical_pages_quantity(), TRUE);
     kernel_log_string("\n");
-    kernel_log_hex(free_physical_pages_quantity());
+    kernel_log_hex(free_physical_pages_quantity(), TRUE);
     kernel_log_string("\npalloc\n");
 
     void *ppage[100];

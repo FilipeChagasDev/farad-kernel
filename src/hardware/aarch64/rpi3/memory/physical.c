@@ -61,8 +61,8 @@ void init_physical_memory_manager()
     while( free_page < physical_mem_info.physical_heap_end )
     {
         physical_mem_info.free_pages_count += 1;
-        prev_free_page = free_page; 
-        free_page += physical_mem_info.page_length>>4;
+        prev_free_page = free_page;
+        free_page = (free_page_marker_t*)((ullong_t)free_page + physical_mem_info.page_length);
         prev_free_page->next = free_page;
         free_page->prev = prev_free_page;
 

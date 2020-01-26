@@ -100,3 +100,8 @@ def make(path, _fmake_path, config_filename):
         target_module.check(step_config)
         target_module.make(step_config)
         print("done")
+        try:
+            config = eval(config_txt)
+        except:
+            print("Failed to refresh config")
+
