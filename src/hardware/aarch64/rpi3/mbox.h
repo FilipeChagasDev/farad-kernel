@@ -28,6 +28,9 @@ extern volatile uint_t mailbox[36];
 #define MBOX_TAG_SETVOLTAGE	0x38003
 #define MBOX_TAG_LAST           0
 
+#define MBOX_TAG_GET_ARM_MEM  0x10005
+#define MBOX_TAG_GET_VC_MEM  0x10006
+
 #define MAIL_EMPTY	0x40000000		/* Mailbox Status Register: Mailbox Empty */
 #define MAIL_FULL	0x80000000	/* Mailbox Status Register: Mailbox Full  */
 

@@ -2,6 +2,7 @@
 #include <memory/physical.h>
 #include <memory/virtual.h>
 #include <log/message.h>
+#include <memory/info.h>
 
 void test_palloc()
 {
@@ -117,9 +118,12 @@ void test_pagetable_enable()
 void test_linear_mapping()
 {
     init_physical_memory_manager();
+    kernel_log_string("creating pagetable\n");
     pagetable_addr_t pt = create_pagetable();
-    pagetable_map_linear(pt, 0, 0x40000000, PA_KERNEL);
+    kernel_log_string("mapping pagetable\n");
+    pagetable_map_linear(pt, 0, 0x60000000, PA_KERNEL);
     
+    kernel_log_string("allocating physical page\n");
     char *page = (char*)alloc_physical_page();
     page[0] = 'A';
     page[1] = 'B';
@@ -149,12 +153,33 @@ void test_log()
     kernel_log_char('\n');
 }
 
+void kerne_log_memory_info()
+{
+    kernel_log_string("cpu memory base - ");
+    kernel_log_hex(get_cpu_memory_base(), TRUE);
+    kernel_log_char('\n');
+
+    kernel_log_string("cpu memory size - ");
+    kernel_log_hex(get_cpu_memory_size(), TRUE);
+    kernel_log_char('\n');
+
+    kernel_log_string("gpu memory base - ");
+    kernel_log_hex(get_gpu_memory_base(), TRUE);
+    kernel_log_char('\n');
+
+    kernel_log_string("gpu memory size - ");
+    kernel_log_hex(get_gpu_memory_size(), TRUE);
+    kernel_log_char('\n');
+}
+
 void main()
 {
     uart_init();
     kernel_log_string("initializing...\n");
-    test_log();
+
+    kerne_log_memory_info();
     test_linear_mapping();
+
     kernel_log_string("done\n");
 //    start_other_3_cores();
 }

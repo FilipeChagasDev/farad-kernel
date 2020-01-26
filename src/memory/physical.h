@@ -12,6 +12,8 @@
 
 typedef struct free_page_marker
 {
+    ullong_t magic;
+#define FREE_PAGE_MARKER_MAGIC 1234
     struct free_page_marker *next;
     struct free_page_marker *prev;
 }free_page_marker_t;

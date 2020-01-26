@@ -5,6 +5,7 @@
 
 #include <memory/physical.h>
 #include <hardware/aarch64/rpi3/memorymap.h>
+#include <memory/info.h>
 
 #ifdef PHYSICAL_MEM_DEBUG
     #include <log/message.h>
@@ -19,8 +20,8 @@ void init_physical_memory_manager()
     volatile extern char _end;
     physical_mem_info.program_end = &_end;
     physical_mem_info.page_length = PAGE_LEN;
-    //physical_mem_info.physical_heap_end = MMIO_BASE;
-    physical_mem_info.physical_heap_end = 0x3C000000;
+    //physical_mem_info.physical_heap_end = 0x3C000000;
+    physical_mem_info.physical_heap_end = (physical_addr_t)get_cpu_memory_size();
 
     // ---- Step 1: Find 64KiB aligned start addr ----
 
@@ -53,27 +54,30 @@ void init_physical_memory_manager()
 
     //First page
     free_page_marker_t *free_page = physical_mem_info.physical_heap_start;
-    free_page_marker_t *prev_free_page = NULL;
+    free_page->magic = FREE_PAGE_MARKER_MAGIC;
+    free_page->prev = NULL;
     physical_mem_info.free_pages_list = free_page;
-    free_page->prev = NULL; 
+     
 
     //Next pages
+    free_page_marker_t *prev_free_page = NULL;
     while( free_page < physical_mem_info.physical_heap_end )
     {
         physical_mem_info.free_pages_count += 1;
+
         prev_free_page = free_page;
-        free_page = (free_page_marker_t*)((ullong_t)free_page + physical_mem_info.page_length);
+        free_page = (free_page_marker_t*)((ullong_t)free_page + physical_mem_info.page_length); //Next page
         prev_free_page->next = free_page;
         free_page->prev = prev_free_page;
+        free_page->magic = FREE_PAGE_MARKER_MAGIC;
 
         #ifdef PHYSICAL_MEM_DEBUG
-        // ==== debug log ====
+        // debug log
         kernel_log_string("page marked free - ");
         kernel_log_hex(free_page, TRUE);
         kernel_log_string(" - total ");
         kernel_log_natural(physical_mem_info.free_pages_count);
         kernel_log_char('\n');
-        // ====================
         #endif
     }
     
@@ -108,10 +112,6 @@ physical_addr_t alloc_physical_page()
     {
         next->prev = NULL;
     }
-    else
-    {
-        physical_mem_info.free_pages_list = NULL;
-    }
 
     physical_mem_info.free_pages_count -= 1;
 
@@ -139,6 +139,7 @@ void free_physical_page(physical_addr_t addr)
     free_page_marker_t *next = physical_mem_info.free_pages_list;
 
     //Insert in the start of list
+    free_page->magic = FREE_PAGE_MARKER_MAGIC;
     free_page->prev = NULL;
     free_page->next = next;
     

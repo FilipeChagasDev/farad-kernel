@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/Version-v0.0.6-blue)
+![Version](https://img.shields.io/badge/Version-v0.0.7-blue)
 ![Compiler](https://img.shields.io/badge/Compiler-gcc-green)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 ![Language](https://img.shields.io/badge/Language-C-yellow)
@@ -21,7 +21,7 @@ Right after cloning the repository, if the bin and obj directories do not exist,
 ./init.sh
 ```
 
-The following command compiles the kernel and generates the kernel8.img file in the bin directory (you may need to run it more than once):
+The following command compiles the kernel and generates the kernel8.img file in the bin directory:
 
 ```sh
 python3 build.py
@@ -40,7 +40,7 @@ Right after cloning the repository, if the bin and obj directories do not exist,
 ./init.sh
 ```
 
-The following command compiles the kernel and generates the kernel8.img file in the bin directory with debug features enabled and starts qemu (you may need to run it more than once):
+The following command compiles the kernel and generates the kernel8.img file in the bin directory with debug features enabled and starts qemu:
 
 ```sh
 python3 debug.py

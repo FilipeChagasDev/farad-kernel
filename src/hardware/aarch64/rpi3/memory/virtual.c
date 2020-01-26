@@ -65,7 +65,8 @@ void pagetable_map(pagetable_addr_t pagetable_base, virtual_addr_t virtual_addr,
     if(l2[l2_index].Value11 == UNDEFINED_BLOCK)
     {
         l3 = (DESC_L3*)alloc_physical_page();
-        
+        if(l3 == NULL) panic_log("Failure in pagetable_map", "alloc_physical_page returned null");
+
         for(ulong_t i = 0; i < ARMV8MMU_TABLE_ENTRIES; i++)
         {
             l3[i].Value11 = UNDEFINED_BLOCK;
@@ -160,6 +161,7 @@ void pagetable_unmap(pagetable_addr_t pagetable_base, virtual_addr_t virtual_add
 
 void pagetable_map_linear(pagetable_addr_t pagetable_base, physical_addr_t start_addr, physical_addr_t end_addr, page_access_enum_t page_access)
 {
+    /* FIXME: Do not works with real hardware */
     ullong_t addr = ((ullong_t)start_addr) & ~((ullong_t)0xFFFF);
     while (addr < end_addr)
     {

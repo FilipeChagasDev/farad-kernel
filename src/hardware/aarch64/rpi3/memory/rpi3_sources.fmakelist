@@ -1,2 +1,3 @@
 physical.c
+info.c
 virtual.c

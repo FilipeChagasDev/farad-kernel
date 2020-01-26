@@ -8,6 +8,7 @@
 
 #include <types.h>
 #include "physical.h"
+#include <panic.h>
 
 typedef physical_addr_t pagetable_addr_t;
 
