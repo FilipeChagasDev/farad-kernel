@@ -1,6 +1,7 @@
 //Code taken and adapted from https://github.com/LdB-ECM/Raspi3-Kernel
 
 #include "mbox.h"
+#include <memory/cache.h>
 
 /* mailbox message buffer */
 volatile uint_t  __attribute__((aligned(16))) mailbox[36];
@@ -56,6 +57,9 @@ int mailbox_call(byte_t ch)
 			/* is it a valid successful response? */
 			return mailbox[1]==MBOX_RESPONSE;
 	}
+
+	invalidate_data_cache();
+
 	return 0;
 }
 
@@ -70,6 +74,9 @@ boolean_t mailbox_tag_write(uint_t message)
 	} 
 	while ((value & MAIL_FULL) != 0); // Make sure arm mailbox is not full
 	MAILBOX_FOR_READ_WRITES->write_1 = message; // Write value to mailbox
+
+	invalidate_data_cache();
+
 	return TRUE; // Write success
 }
 
@@ -87,5 +94,8 @@ uint_t mailbox_tag_read ()
 	}
 	while ((value & 0xF) != 0x8); // We have response back
 	value &= ~(0xF); // Lower 4 low channel bits are not part of message
+
+	invalidate_data_cache();
+	
 	return value; // Return the value
 }

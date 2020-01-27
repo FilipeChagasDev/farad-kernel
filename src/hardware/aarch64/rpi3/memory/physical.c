@@ -17,6 +17,8 @@ physical_mem_info_t physical_mem_info;
 
 void init_physical_memory_manager()
 {
+    physical_mem_info.physical_end = 0x40000000;
+    
     volatile extern char _end;
     physical_mem_info.program_end = &_end;
     physical_mem_info.page_length = PAGE_LEN;

@@ -23,6 +23,7 @@ typedef struct physical_mem_info_struct
     void *program_end;
     void *physical_heap_start;
     void *physical_heap_end;
+    void *physical_end;
     ulong_t physical_heap_length;
     ulong_t page_quantity;
     uint_t page_length;   

@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/Version-v0.0.7-blue)
+![Version](https://img.shields.io/badge/Version-v0.0.8-blue)
 ![Compiler](https://img.shields.io/badge/Compiler-gcc-green)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 ![Language](https://img.shields.io/badge/Language-C-yellow)
@@ -14,6 +14,12 @@
 * qemu-system-aarch64 (QEMU for ARM64, just for kernel emulation)
 
 ## Build
+
+You need to enable execute permissions for the script files:
+
+```sh
+chmod u=rwx,g=rw,o=r init.sh clear.sh qemurpi3.sh
+```
 
 Right after cloning the repository, if the bin and obj directories do not exist, the following command must be executed:
 
@@ -33,6 +39,12 @@ The following command starts the emulation:
 ./qemurpi3.sh
 ```
 ## Debug
+
+You need to enable execute permissions for the script files:
+
+```sh
+chmod u=rwx,g=rw,o=r init.sh clear.sh qemurpi3.sh
+```
 
 Right after cloning the repository, if the bin and obj directories do not exist, the following command must be executed:
 
@@ -54,7 +66,8 @@ python3 debug.py
 * [x] Physical memory pages alloc-free (done at v0.0.2)
 * [x] PageTable create-delete-map-unmap (done at v0.0.3)
 * [x] PageTable enable-switch (done at v0.0.4)
-* [ ] Kernel malloc-free
+* [x] Kernel virtual segment (done at v0.0.8)
+* [x] Kernel heap malloc-free (done at v0.0.8)
 * [ ] Other features... 
 
 ## Credits

@@ -1,6 +1,7 @@
 cd obj
-rm *
+rm *.o
 cd ..
 cd bin
-rm *
+rm *.elf
+rm *.img
 cd ..

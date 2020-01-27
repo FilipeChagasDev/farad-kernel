@@ -3,6 +3,10 @@
 #include <memory/virtual.h>
 #include <log/message.h>
 #include <memory/info.h>
+#include <memory/linearspace.h>
+#include <memory/kernelsegment.h>
+#include <memory/kernelheap.h>
+#include <calc.h>
 
 void test_palloc()
 {
@@ -118,6 +122,7 @@ void test_pagetable_enable()
 void test_linear_mapping()
 {
     init_physical_memory_manager();
+    
     kernel_log_string("creating pagetable\n");
     pagetable_addr_t pt = create_pagetable();
     kernel_log_string("mapping pagetable\n");
@@ -153,7 +158,7 @@ void test_log()
     kernel_log_char('\n');
 }
 
-void kerne_log_memory_info()
+void kernel_log_memory_info()
 {
     kernel_log_string("cpu memory base - ");
     kernel_log_hex(get_cpu_memory_base(), TRUE);
@@ -172,13 +177,169 @@ void kerne_log_memory_info()
     kernel_log_char('\n');
 }
 
+void test_linear_space()
+{
+    init_physical_memory_manager();
+    init_linear_space();
+    
+    kernel_log_hex(physical_pages_quantity(), TRUE);
+    kernel_log_string("\n");
+    kernel_log_hex(free_physical_pages_quantity(), TRUE);
+    kernel_log_string("\npalloc\n");
+
+    void *ppage[100];
+
+    for(int i = 0; i < 10; i++)
+    {
+        ppage[i] = alloc_physical_page();
+    }
+
+    for(int i = 0; i < 10; i++)
+    {
+        free_physical_page(ppage[i]);
+    }
+
+    for(int i = 0; i < 10; i++)
+    {
+        ppage[i] = alloc_physical_page();
+    }
+}
+
+void test_kernel_segment()
+{
+    init_physical_memory_manager();
+    init_linear_space();
+    init_kernel_segment();
+    kernel_log_string("Starting test\n");
+    enable_kernel_segment();
+    char *num = kernel_segment_info.virtual_heap_base;
+    
+    for(int i = 0; i < 5; i++)
+    {
+        num[0] = 'H'; num[1]='E'; num[2]='L'; num[3]='L'; num[4]='O'; num[5]='\0';
+        
+        kernel_log_string("HELLO written at ");
+        kernel_log_hex(num, TRUE);
+        num = (char*)((ullong_t)num + physical_mem_info.page_length);
+        kernel_log_string(" - next->");
+        kernel_log_hex(num, TRUE);
+        kernel_log_char('\n');
+        extend_kernel_segment();
+    }
+
+    kernel_log_string("Switching to linear space\n");
+
+    enter_linear_space();
+    char *it = kernel_segment_info.virtual_heap_base;
+    while (it < physical_mem_info.physical_heap_end)
+    {
+        if(it[0]=='H' && it[1]=='E' && it[2]=='L' && it[3]=='L' && it[4]=='O' && it[5]=='\0')
+        {
+            kernel_log_string("HELLO found at ");
+            kernel_log_hex(it, TRUE);
+            kernel_log_char('\n');
+        }
+        it++;
+    }
+}
+
+void test_malloc()
+{
+    init_physical_memory_manager();
+    init_linear_space();
+    init_kernel_segment();
+    kernel_log_string("Starting test\n");
+    enable_kernel_segment();
+
+    kernel_log_string("Initializing heap\n");
+    init_kernel_heap();
+
+    void *spaces[10];
+
+    log_heap_structure();
+
+    for(int i = 0; i < 10; i++)
+    {
+        spaces[i] = kernel_malloc((i+1)*100);
+        kernel_log_string("Allocated at ");
+        kernel_log_hex(spaces[i], TRUE);
+        kernel_log_string(" - ");
+        kernel_log_hex(gap_from_buffer(spaces[i]), TRUE);
+        kernel_log_char('\n');
+    }
+
+    log_heap_structure();
+
+    for(int i = 0; i < 10; i++)
+    {
+        kernel_free(spaces[i]);
+        kernel_log_string("Free at ");
+        kernel_log_hex(spaces[i], TRUE);
+        kernel_log_string(" - ");
+        kernel_log_hex(gap_from_buffer(spaces[i]), TRUE);
+        kernel_log_char('\n');
+    } 
+
+    log_heap_structure();
+
+    for(int i = 9; i >= 0; i--)
+    {
+        spaces[i] = kernel_malloc((i+1)*100);
+        kernel_log_string("Allocated at ");
+        kernel_log_hex(spaces[i], TRUE);
+        kernel_log_string(" - ");
+        kernel_log_hex(gap_from_buffer(spaces[i]), TRUE);
+        kernel_log_char('\n');
+    }
+
+    log_heap_structure();
+
+    for(int i = 9; i >= 0; i--)
+    {
+        kernel_free(spaces[i]);
+        kernel_log_string("Free at ");
+        kernel_log_hex(spaces[i], TRUE);
+        kernel_log_string(" - ");
+        kernel_log_hex(gap_from_buffer(spaces[i]), TRUE);
+        kernel_log_char('\n');
+    }
+
+    log_heap_structure();
+}
+
+void test_calc()
+{
+    init_physical_memory_manager();
+    init_linear_space();
+    for(int i = 0; i < 100; i++)
+    {
+        kernel_log_natural(i);
+        kernel_log_string(" - ");
+        kernel_log_natural(next_multiple(10,i));
+        kernel_log_char('\n');
+    }
+
+}
+
+void test_stack_overflow(ullong_t n)
+{
+    kernel_log_natural(n);
+    kernel_log_char('\n');
+    test_stack_overflow(n+1);
+}
+
 void main()
 {
     uart_init();
     kernel_log_string("initializing...\n");
 
-    kerne_log_memory_info();
-    test_linear_mapping();
+    kernel_log_memory_info();
+    //test_stack_overflow(0);
+    //test_calc();
+    test_malloc();
+    //test_kernel_segment();
+    //test_linear_space();
+    //test_linear_mapping();
 
     kernel_log_string("done\n");
 //    start_other_3_cores();
