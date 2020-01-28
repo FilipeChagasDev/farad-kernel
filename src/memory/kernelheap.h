@@ -31,7 +31,6 @@ typedef struct kernel_heap_gap
     gap_brach_t upper_length_branch;
     struct kernel_heap_gap *upper_length;
     struct kernel_heap_gap *bigger_length;
-    struct kernel_heap_gap *equal_length;
     struct kernel_heap_gap *smaller_length;
     
     gap_brach_t upper_addr_branch;

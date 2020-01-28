@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/Version-v0.0.8-blue)
+![Version](https://img.shields.io/badge/Version-v0.0.9-blue)
 ![Compiler](https://img.shields.io/badge/Compiler-gcc-green)
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 ![Language](https://img.shields.io/badge/Language-C-yellow)

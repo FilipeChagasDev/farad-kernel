@@ -22,7 +22,6 @@ void init_gap(kernel_heap_gap_t *gap, virtual_addr_t end)
     gap->upper_length_branch = GAP_NONE_BRANCH;
     gap->upper_length = NULL;
     gap->bigger_length = NULL;
-    gap->equal_length = NULL;
     gap->smaller_length = NULL;
 
     gap->upper_addr_branch = GAP_NONE_BRANCH;
@@ -120,21 +119,7 @@ void insert_gap_by_length(kernel_heap_gap_t *gap)
         ullong_t gap_len = gap_length(gap);
         ullong_t it_len = gap_length(it);
         
-        if(gap_len == it_len)
-        {
-            if(it->equal_length == NULL)
-            {
-                it->equal_length = gap;
-                gap->upper_length = it;
-                gap->upper_length_branch = GAP_EQUAL_BRANCH;
-                break;
-            }
-            else
-            {
-                it = it->equal_length;
-            }
-        }
-        else if(gap_len < it_len)
+        if(gap_len <= it_len)
         {
             if(it->smaller_length == NULL)
             {
@@ -277,19 +262,16 @@ void remove_gap_by_length(kernel_heap_gap_t *gap)
         {
             upper->bigger_length = NULL;
         }
-        else if(gap->upper_length_branch == GAP_SMALLER_BRANCH)
+        else //if(gap->upper_length_branch == GAP_SMALLER_BRANCH)
         {
             upper->smaller_length = NULL;
-        }
-        else //if(gap->upper_length_branch == GAP_EQUAL_BRANCH)
-        {
-            upper->equal_length = NULL;
         }
 
         if(smaller != NULL) insert_gap_by_length(smaller);
         if(bigger != NULL) insert_gap_by_length(bigger);
     }
 }
+
 
 void remove_gap_by_addr(kernel_heap_gap_t *gap)
 {
