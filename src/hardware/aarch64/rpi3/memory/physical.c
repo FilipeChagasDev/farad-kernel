@@ -6,6 +6,7 @@
 #include <memory/physical.h>
 #include <hardware/aarch64/rpi3/memorymap.h>
 #include <memory/info.h>
+#include <calc.h>
 
 #ifdef PHYSICAL_MEM_DEBUG
     #include <log/message.h>
@@ -26,27 +27,7 @@ void init_physical_memory_manager()
     physical_mem_info.physical_heap_end = (physical_addr_t)get_cpu_memory_size();
 
     // ---- Step 1: Find 64KiB aligned start addr ----
-
-    ullong_t start_found = -1;
-    for( ullong_t multiple_64k = 0;
-         multiple_64k < physical_mem_info.physical_heap_end;
-         multiple_64k += PAGE_LEN )
-    {
-        if(multiple_64k >= physical_mem_info.program_end)
-        {
-            start_found = multiple_64k;
-            break;
-        }
-    }
-
-    if(start_found == -1)
-    {
-        panic_log("Aligned physical heap start not found","Cannot init memory");
-    }
-    else
-    {
-        physical_mem_info.physical_heap_start = start_found;
-    }
+    physical_mem_info.physical_heap_start = next_multiple(PAGE_LEN, physical_mem_info.program_end);
 
     // ---- Step 2: Mark all free pages ----
 
