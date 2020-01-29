@@ -30,7 +30,6 @@ void init_physical_memory_manager()
     physical_mem_info.physical_heap_start = next_multiple(PAGE_LEN, physical_mem_info.program_end);
 
     // ---- Step 2: Mark all free pages ----
-
     physical_mem_info.physical_heap_length = physical_mem_info.physical_heap_end - physical_mem_info.physical_heap_start;
     physical_mem_info.page_quantity = physical_mem_info.physical_heap_length / physical_mem_info.page_length;
     physical_mem_info.free_pages_count = 0;
@@ -41,7 +40,6 @@ void init_physical_memory_manager()
     free_page->prev = NULL;
     physical_mem_info.free_pages_list = free_page;
      
-
     //Next pages
     free_page_marker_t *prev_free_page = NULL;
     while( free_page < physical_mem_info.physical_heap_end )

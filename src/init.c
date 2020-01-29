@@ -193,7 +193,7 @@ void test_linear_space()
     {
         ppage[i] = alloc_physical_page();
     }
-
+    
     for(int i = 0; i < 10; i++)
     {
         free_physical_page(ppage[i]);
@@ -260,7 +260,7 @@ void test_malloc()
 
     for(int i = 0; i < 10; i++)
     {
-        spaces[i] = kernel_malloc((i+1)*100);
+        spaces[i] = kmalloc((i+1)*100);
         kernel_log_string("Allocated at ");
         kernel_log_hex(spaces[i], TRUE);
         kernel_log_string(" - ");
@@ -272,7 +272,7 @@ void test_malloc()
 
     for(int i = 0; i < 10; i++)
     {
-        kernel_free(spaces[i]);
+        kfree(spaces[i]);
         kernel_log_string("Free at ");
         kernel_log_hex(spaces[i], TRUE);
         kernel_log_string(" - ");
@@ -284,7 +284,7 @@ void test_malloc()
 
     for(int i = 9; i >= 0; i--)
     {
-        spaces[i] = kernel_malloc((i+1)*100);
+        spaces[i] = kmalloc((i+1)*100);
         kernel_log_string("Allocated at ");
         kernel_log_hex(spaces[i], TRUE);
         kernel_log_string(" - ");
@@ -296,7 +296,7 @@ void test_malloc()
 
     for(int i = 9; i >= 0; i--)
     {
-        kernel_free(spaces[i]);
+        kfree(spaces[i]);
         kernel_log_string("Free at ");
         kernel_log_hex(spaces[i], TRUE);
         kernel_log_string(" - ");
@@ -336,6 +336,7 @@ void main()
     kernel_log_memory_info();
     //test_stack_overflow(0);
     //test_calc();
+    //kernel_log_natural(sizeof(kernel_heap_gap_t));
     test_malloc();
     //test_kernel_segment();
     //test_linear_space();

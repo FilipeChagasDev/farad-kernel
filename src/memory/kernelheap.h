@@ -19,29 +19,34 @@ typedef struct
 {
     byte_t magic;
     ullong_t length;
-}kernel_buffer_side_t;
+}kernel_superbuffer_t;
 
-typedef enum {GAP_NONE_BRANCH, GAP_BIGGER_BRANCH, GAP_EQUAL_BRANCH, GAP_SMALLER_BRANCH} gap_brach_t;
+//typedef enum {GAP_NONE_BRANCH, GAP_BIGGER_BRANCH, GAP_SMALLER_BRANCH} gap_branch_t;
+
+typedef byte_t gap_branch_t;
+#define GAP_NONE_BRANCH 0
+#define GAP_BIGGER_BRANCH 1
+#define GAP_SMALLER_BRANCH 2
 
 typedef struct kernel_heap_gap
 {
     byte_t magic;
+    byte_t ignored;
     virtual_addr_t end;
-    //struct kernel_heap_gap *next;
-    gap_brach_t upper_length_branch;
+    //Ordered length tree
+    gap_branch_t upper_length_branch;
     struct kernel_heap_gap *upper_length;
     struct kernel_heap_gap *bigger_length;
     struct kernel_heap_gap *smaller_length;
-    
-    gap_brach_t upper_addr_branch;
+    //Ordered addr tree
+    gap_branch_t upper_addr_branch;
     struct kernel_heap_gap *upper_addr;
     struct kernel_heap_gap *bigger_addr;
     struct kernel_heap_gap *smaller_addr;
-}kernel_heap_gap_t;
+}PACKED kernel_heap_gap_t;
 
 typedef struct
 {
-    //kernel_heap_gap_t *list;
     kernel_heap_gap_t *length_tree;
     kernel_heap_gap_t *addr_tree;
     ullong_t gap_quantity;
@@ -60,15 +65,17 @@ void remove_gap_by_length(kernel_heap_gap_t *gap);
 void remove_gap_by_addr(kernel_heap_gap_t *gap);
 void insert_gap(kernel_heap_gap_t *gap);
 void remove_gap(kernel_heap_gap_t *gap);
+kernel_superbuffer_t *superbuffer_from_buffer(virtual_addr_t buffer);
 boolean_t is_buffer(virtual_addr_t buffer);
+ullong_t superbuffer_length(virtual_addr_t buffer);
 ullong_t buffer_length(virtual_addr_t buffer);
-ullong_t buffer_length_without_side(virtual_addr_t buffer);
 kernel_heap_gap_t *gap_from_buffer(virtual_addr_t buffer);
 void list_gaps_by_addr(kernel_heap_gap_t **array);
 boolean_t try_merge_gaps(kernel_heap_gap_t *higger_gap, kernel_heap_gap_t *lower_gap);
 
-virtual_addr_t kernel_malloc(ullong_t length);
-void kernel_free(virtual_addr_t addr);
+virtual_addr_t kmalloc(ullong_t length);
+void kfree(virtual_addr_t addr);
+
 void log_heap_structure();
 
 // --- Unnecessary functions ---

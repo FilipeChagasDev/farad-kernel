@@ -7,6 +7,7 @@
 #include <calc.h>
 
 #undef HEAP_DEBUG //Comment this line to see the debug heap logs
+#define NO_VOID
 
 #ifdef HEAP_DEBUG
     #include <log/message.h>
@@ -355,29 +356,34 @@ void remove_gap(kernel_heap_gap_t *gap)
     kernel_heap_info.gap_quantity -= 1;
 }
 
+kernel_superbuffer_t *superbuffer_from_buffer(virtual_addr_t buffer)
+{
+    return (kernel_superbuffer_t*)((ullong_t)buffer - sizeof(kernel_superbuffer_t));
+}
+
 boolean_t is_buffer(virtual_addr_t buffer)
 {
-    kernel_buffer_side_t *side = (kernel_buffer_side_t*)((ullong_t)buffer - sizeof(kernel_buffer_side_t));
-    return side->magic == KERNEL_HEAP_BUFFER_MAGIC;
+    kernel_superbuffer_t *sb = superbuffer_from_buffer(buffer);
+    return sb->magic == KERNEL_HEAP_BUFFER_MAGIC;
+}
+
+ullong_t superbuffer_length(virtual_addr_t buffer)
+{
+    if(is_buffer(buffer) == FALSE) panic_log("Failure in superbuffer_length", "Invalid arg");
+    kernel_superbuffer_t *sb = superbuffer_from_buffer(buffer);
+    return sb->length;
 }
 
 ullong_t buffer_length(virtual_addr_t buffer)
 {
-    if(is_buffer(buffer) == FALSE) panic_log("Failure in buffer_length", "Invalid arg");
-    kernel_buffer_side_t *side = (kernel_buffer_side_t*)((ullong_t)buffer - sizeof(kernel_buffer_side_t));
-    return side->length;
-}
-
-ullong_t buffer_length_without_side(virtual_addr_t buffer)
-{
-    if(is_buffer(buffer) == FALSE) panic_log("Failure in buffer_length", "Invalid arg");
-    kernel_buffer_side_t *side = (kernel_buffer_side_t*)((ullong_t)buffer - sizeof(kernel_buffer_side_t));
-    return side->length - sizeof(kernel_buffer_side_t);
+    if(is_buffer(buffer) == FALSE) panic_log("Failure in superbuffer_length", "Invalid arg");
+    kernel_superbuffer_t *sb = superbuffer_from_buffer(buffer);
+    return sb->length - sizeof(kernel_superbuffer_t);
 }
 
 kernel_heap_gap_t *gap_from_buffer(virtual_addr_t buffer)
 {
-    return (kernel_heap_gap_t*)((ullong_t)buffer - sizeof(kernel_buffer_side_t));
+    return (kernel_heap_gap_t*)superbuffer_from_buffer(buffer);
 }
 
 boolean_t try_merge_gaps(kernel_heap_gap_t *higher_gap, kernel_heap_gap_t *lower_gap)
@@ -494,7 +500,7 @@ boolean_t extend_kernel_heap()
     return TRUE; //Success
 }
 
-virtual_addr_t kernel_malloc(ullong_t length)
+virtual_addr_t kmalloc(ullong_t length)
 {
     #ifdef HEAP_DEBUG
     kernel_log_string("allocating ");
@@ -504,8 +510,16 @@ virtual_addr_t kernel_malloc(ullong_t length)
 
     if(length == 0) return NULL;
 
+    ullong_t superbuffer_req_len = length + sizeof(kernel_superbuffer_t);
+
+    #ifdef NO_VOID
     //Allocated space most be multiple of sizeof(kernel_heap_gap_t)
-    ullong_t required_len = next_multiple(sizeof(kernel_heap_gap_t), length + sizeof(kernel_buffer_side_t));
+    ullong_t required_len = next_multiple(sizeof(kernel_heap_gap_t), superbuffer_req_len);
+    #else
+    //Allocated space must be at least sizeof(kernel_heap_gap_t)
+    ullong_t required_len = (superbuffer_req_len >= sizeof(kernel_heap_gap_t) ? superbuffer_req_len : sizeof(kernel_heap_gap_t));
+    #endif
+
 
     #ifdef HEAP_DEBUG
     kernel_log_natural(required_len);
@@ -522,7 +536,7 @@ virtual_addr_t kernel_malloc(ullong_t length)
         if(success == FALSE)
         {
             #ifdef HEAP_DEBUG
-            kernel_log_string("kernel_malloc returning null\n");
+            kernel_log_string("kmalloc returning null\n");
             #endif
 
             return NULL; //Failure
@@ -532,7 +546,7 @@ virtual_addr_t kernel_malloc(ullong_t length)
     }
     
     //Calculate buffer limits
-    virtual_addr_t buffer_base = (virtual_addr_t)((ullong_t)gap + sizeof(kernel_buffer_side_t));
+    virtual_addr_t buffer_base = (virtual_addr_t)((ullong_t)gap + sizeof(kernel_superbuffer_t));
     virtual_addr_t buffer_end = (virtual_addr_t)((ullong_t)gap + required_len);
 
     //Place a new gap in the remaining space
@@ -555,18 +569,18 @@ virtual_addr_t kernel_malloc(ullong_t length)
     remove_gap(gap);
 
     //Set up buffer side
-    kernel_buffer_side_t *buffer_side = (kernel_buffer_side_t*)gap;
+    kernel_superbuffer_t *buffer_side = (kernel_superbuffer_t*)gap;
     buffer_side->magic = KERNEL_HEAP_BUFFER_MAGIC;
     buffer_side->length = required_len;
 
     return buffer_base;
 }
 
-void kernel_free(virtual_addr_t addr)
+void kfree(virtual_addr_t addr)
 {
-    if(is_buffer(addr) == FALSE) panic_log("Failure in kernel_free", "addr is not a valid buffer");
+    if(is_buffer(addr) == FALSE) panic_log("Failure in kfree", "addr is not a valid buffer");
     
-    virtual_addr_t buffer_end = (virtual_addr_t)((ullong_t)addr + buffer_length_without_side(addr));
+    virtual_addr_t buffer_end = (virtual_addr_t)((ullong_t)addr + buffer_length(addr));
     kernel_heap_gap_t *new_gap = gap_from_buffer(addr);
     init_gap(new_gap, buffer_end);
     insert_gap(new_gap);
