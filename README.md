@@ -3,8 +3,18 @@
 ![License](https://img.shields.io/badge/License-GPLv3-blue)
 ![Language](https://img.shields.io/badge/Language-C-yellow)
 
-# kernel.f
-(Kernel-dot-F) Multitask kernel project
+# Farad Kernel
+Multitask kernel project for embedded systems
+
+# Supported Hardware
+
+### Architectures
+
+* ARMv8-A
+
+### Computers
+
+* Raspberry Pi 3 (Broadcom's BCM2837 SoC, Four Cortex-A53 cores, 1GB RAM)
 
 # Build/Debug dependencies
 
