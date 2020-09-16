@@ -336,9 +336,9 @@ void main()
     kernel_log_memory_info();
     //test_stack_overflow(0);
     //test_calc();
-    ullong_t el = 0;
-    asm ("msr %0, CurrentEL" : "=r" (el));
-    kernel_log_natural(el);
+    //ullong_t el = 0;
+    //asm ("msr %0, CurrentEL" : "=r" (el));
+    //kernel_log_natural(el);
     //test_malloc();
     //test_kernel_segment();
     //test_linear_space();
